@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="GtB9lGKZLV82W4B9mA4zkQUwkmToqFRgWtZ7FWdx7v8" />
+  <title>MediBox IoT — Patient Telemetry Dashboard</title>
+  
+  <!-- Modern Clean Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#0b1017',
+              card: '#131b26',
+              tile: '#182230',
+              border: '#1e293b',
+              teal: '#14b8a6',
+              cyan: '#06b6d4'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      background-color: #0b1017;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(20, 184, 166, 0.08) 0px, transparent 40%),
+        radial-gradient(at 100% 50%, rgba(6, 182, 212, 0.05) 0px, transparent 40%);
+      background-attachment: fixed;
+      color: #e2e8f0;
+    }
+
+    /* Cyber-Dark Neumorphic Card */
+    .card-dark {
+      background: #131b26;
+      border: 1px solid #1e293b;
+      border-radius: 1.25rem;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+      transition: all 0.2s ease;
+    }
+    .card-dark:hover {
+      border-color: #334155;
+    }
+
+    /* Inner Tile */
+    .tile-dark {
+      background: #17212f;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+    }
+    .tile-dark:hover {
+      background: #1c2738;
+      border-color: rgba(20, 184, 166, 0.3);
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 12px currentColor); }
+      50% { opacity: 0.6; transform: scale(1.08); filter: drop-shadow(0 0 4px currentColor); }
+    }
+    .led-glow-green { 
+      color: #10b981;
+      animation: pulse-glow 0.8s infinite; 
+    }
+    .led-glow-amber { 
+      color: #f59e0b;
+      animation: pulse-glow 0.8s infinite; 
+    }
+    .led-glow-red { 
+      color: #ef4444;
+      animation: pulse-glow 0.8s infinite; 
+    }
+    .buzzer-buzz { animation: pulse-glow 0.35s infinite; }
+
+    /* Circular Donut Neon Glow */
+    .donut-glow {
+      filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.45));
+    }
+
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #0b1017; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+    /* ========================================================= */
+    /* DAY (LIGHT) THEME STYLES (High Visibility & Full Contrast)*/
+    /* ========================================================= */
+    body.light-theme {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+    }
+
+    /* Left Sidebar */
+    body.light-theme aside {
+      background-color: #ffffff !important;
+      border-right-color: #e2e8f0 !important;
+    }
+    body.light-theme aside button {
+      color: #64748b !important;
+      background-color: transparent !important;
+    }
+    body.light-theme aside button:hover {
+      background-color: #f1f5f9 !important;
+      color: #0d9488 !important;
+    }
+    body.light-theme #nav-btn-home {
+      background-color: #f0fdfa !important;
+      color: #0d9488 !important;
+    }
+    body.light-theme #nav-btn-telemetry {
+      background-color: #f0fdfa !important;
+      border-color: #99f6e4 !important;
+      color: #0d9488 !important;
+    }
+
+    /* Top Navigation Header */
+    body.light-theme header {
+      background-color: #ffffff !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+    body.light-theme header div[class*="rounded-full"],
+    body.light-theme header button[class*="rounded-full"] {
+      background-color: #f1f5f9 !important;
+      border-color: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    body.light-theme #btn-usb-connect,
+    body.light-theme #header-user-btn,
+    body.light-theme #theme-toggle,
+    body.light-theme #sound-toggle {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    body.light-theme #btn-usb-connect:hover,
+    body.light-theme #header-user-btn:hover,
+    body.light-theme #theme-toggle:hover,
+    body.light-theme #sound-toggle:hover {
+      background-color: #e2e8f0 !important;
+    }
+    body.light-theme #live-clock,
+    body.light-theme #sse-text,
+    body.light-theme #header-user-name,
+    body.light-theme #usb-status-text {
+      color: #0f172a !important;
+    }
+
+    /* General Dark Hex Catch-All for Inner Pills & Dark Utilities */
+    body.light-theme [class*="bg-[#0"],
+    body.light-theme [class*="bg-[#1"],
+    body.light-theme [class*="bg-slate-900"],
+    body.light-theme [class*="bg-slate-950"],
+    body.light-theme [class*="bg-slate-800"] {
+      background-color: #f1f5f9 !important;
+    }
+
+    /* Cards, Panels & Outer Surfaces (Crisp White) */
+    body.light-theme .card-dark,
+    body.light-theme #view-telemetry .card-dark {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04) !important;
+    }
+    body.light-theme .tile-dark {
+      background-color: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.light-theme .tile-dark:hover {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+    }
+
+    /* Donut Chart Center Hub & Tooltip */
+    body.light-theme #donut-center-hub {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06) !important;
+    }
+    body.light-theme #center-adherence-pct {
+      color: #0f172a !important;
+    }
+    body.light-theme #chart-3d-tooltip {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    }
+    body.light-theme #tip-title {
+      color: #0f172a !important;
+    }
+    body.light-theme .donut-glow {
+      filter: drop-shadow(0 4px 12px rgba(6, 182, 212, 0.15)) !important;
+    }
+
+    /* Hardware Telemetry Specific Items */
+    body.light-theme #led-status-1,
+    body.light-theme #led-status-2,
+    body.light-theme #led-status-3 {
+      background-color: #f1f5f9 !important;
+      color: #64748b !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.light-theme #hardware-btn-press {
+      background-color: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    body.light-theme #hardware-btn-press:hover {
+      background-color: #f1f5f9 !important;
+      border-color: #14b8a6 !important;
+    }
+    body.light-theme button[onclick*="schedule-drawer"] {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    body.light-theme button[onclick*="schedule-drawer"]:hover {
+      background-color: #e2e8f0 !important;
+    }
+
+    /* Activity Log & History Table */
+    body.light-theme #history-section {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.light-theme thead,
+    body.light-theme thead tr {
+      background-color: #f8fafc !important;
+      color: #475569 !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.light-theme tbody tr {
+      border-color: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+    body.light-theme tbody tr:hover {
+      background-color: #f8fafc !important;
+    }
+    body.light-theme tbody td {
+      color: #0f172a !important;
+    }
+    body.light-theme #btn-reset-stats,
+    body.light-theme #dose-record-count-badge {
+      background-color: #f1f5f9 !important;
+      color: #475569 !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.light-theme #btn-reset-stats:hover {
+      background-color: #ffe4e6 !important;
+      color: #e11d48 !important;
+      border-color: #fca5a5 !important;
+    }
+
+    /* Badges & Status Indicators (Clean Pastel Contrast) */
+    body.light-theme [class*="bg-emerald-950"] {
+      background-color: #ecfdf5 !important;
+      color: #047857 !important;
+      border-color: #a7f3d0 !important;
+    }
+    body.light-theme [class*="bg-teal-950"] {
+      background-color: #f0fdfa !important;
+      color: #0f766e !important;
+      border-color: #99f6e4 !important;
+    }
+    body.light-theme [class*="bg-rose-950"] {
+      background-color: #fff1f2 !important;
+      color: #be123c !important;
+      border-color: #fecdd3 !important;
+    }
+    body.light-theme [class*="bg-amber-950"] {
+      background-color: #fffbeb !important;
+      color: #b45309 !important;
+      border-color: #fde68a !important;
+    }
+
+    /* Modals & Drawers */
+    body.light-theme #schedule-drawer,
+    body.light-theme #adherence-modal,
+    body.light-theme #help-modal,
+    body.light-theme #auth-modal,
+    body.light-theme #login-modal {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      color: #0f172a !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+    }
+    body.light-theme #schedule-drawer > div:first-child,
+    body.light-theme #adherence-modal > div:first-child,
+    body.light-theme #help-modal > div:first-child,
+    body.light-theme #auth-modal > div:first-child {
+      background-color: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.light-theme #adherence-modal > div:last-child,
+    body.light-theme #help-modal > div:last-child {
+      background-color: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.light-theme #btn-close-schedule-drawer,
+    body.light-theme #btn-close-adherence-modal,
+    body.light-theme #btn-close-help-modal {
+      background-color: #f1f5f9 !important;
+      color: #64748b !important;
+    }
+    body.light-theme #btn-close-schedule-drawer:hover,
+    body.light-theme #btn-close-adherence-modal:hover,
+    body.light-theme #btn-close-help-modal:hover {
+      background-color: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+
+    /* Inputs, Selects & Form Controls */
+    body.light-theme input,
+    body.light-theme select {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    body.light-theme input::placeholder {
+      color: #94a3b8 !important;
+    }
+
+    /* High Contrast Text & Borders */
+    body.light-theme .text-slate-200,
+    body.light-theme .text-slate-300,
+    body.light-theme .text-white {
+      color: #0f172a !important;
+    }
+    body.light-theme .text-slate-400,
+    body.light-theme .text-slate-500 {
+      color: #64748b !important;
+    }
+    body.light-theme .border-slate-800,
+    body.light-theme .border-slate-700,
+    body.light-theme .border-slate-800\/80,
+    body.light-theme .border-slate-700\/80,
+    body.light-theme .border-slate-700\/60 {
+      border-color: #e2e8f0 !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans antialiased selection:bg-teal-500 selection:text-white flex">
+
+  <!-- LEFT SIDEBAR (Icon Rail like in image) -->
+  <aside class="w-16 bg-[#090d14] border-r border-slate-800/80 flex flex-col justify-between items-center py-5 shrink-0 z-30">
+    
+    <!-- Top Icons -->
+    <div class="flex flex-col items-center space-y-6">
+      <!-- App Switcher Logo (Cyan Glowing Rounded Square - Switches to IoT Hardware Controls) -->
+      <button id="nav-btn-telemetry" onclick="switchView('telemetry')" class="w-10 h-10 rounded-xl bg-slate-800/80 hover:bg-teal-500/20 border border-slate-700 hover:border-teal-500/40 text-slate-300 hover:text-teal-400 flex items-center justify-center text-sm shadow-md transition hover:scale-105 cursor-pointer" title="IoT Hardware Control Center">
+        <i class="fa-solid fa-table-cells-large"></i>
+      </button>
+
+      <!-- Nav Items -->
+      <nav class="flex flex-col space-y-5 text-slate-400">
+        <!-- Home / Patient Portal Button -->
+        <button id="nav-btn-home" onclick="switchView('home')" class="w-9 h-9 rounded-xl flex items-center justify-center text-teal-400 bg-slate-800/60 transition cursor-pointer" title="Patient Home & Wellness Portal">
+          <i class="fa-solid fa-house text-sm"></i>
+        </button>
+        <!-- Activity Logs Shortcut -->
+        <button id="nav-btn-logs" onclick="switchView('telemetry'); setTimeout(() => { const el = document.getElementById('history-section'); if (el) el.scrollIntoView({behavior:'smooth'}); }, 100);" class="w-9 h-9 rounded-xl flex items-center justify-center hover:text-teal-400 hover:bg-slate-800/40 transition cursor-pointer" title="Activity Logs">
+          <i class="fa-solid fa-list-check text-sm"></i>
+        </button>
+        <!-- Schedule Settings -->
+        <button id="btn-open-schedule-drawer" class="w-9 h-9 rounded-xl flex items-center justify-center hover:text-teal-400 hover:bg-slate-800/40 transition cursor-pointer" title="Schedule Settings">
+          <i class="fa-solid fa-gear text-sm"></i>
+        </button>
+        <!-- Adherence & Health Analytics -->
+        <button id="btn-open-adherence-modal" onclick="openAdherenceModal()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:text-teal-400 hover:bg-slate-800/40 transition cursor-pointer" title="Adherence & Health Analytics">
+          <i class="fa-solid fa-chart-column text-sm"></i>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Bottom Icons -->
+    <div class="flex flex-col items-center space-y-5 text-slate-500">
+      <button id="btn-help-modal" onclick="openHelpModal()" class="w-8 h-8 rounded-lg flex items-center justify-center hover:text-teal-400 hover:bg-slate-800/40 transition cursor-pointer" title="Help & Frequently Asked Questions">
+        <i class="fa-regular fa-circle-question text-sm"></i>
+      </button>
+      <!-- Logout Button (Replaced Refresh Dashboard logo) -->
+      <button id="btn-logout" onclick="handleLogout()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 transition cursor-pointer" title="Log Out">
+        <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- MAIN VIEWPORT WRAPPER -->
+  <div class="flex-1 flex flex-col min-w-0">
+
+    <!-- TOP HEADER (Exact Match: Hamburger + MediBox IoT + Pills) -->
+    <header class="h-16 border-b border-slate-800/80 bg-[#0d131c]/90 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-40">
+      
+      <!-- Left: Hamburger + Glowing Logo -->
+      <div class="flex items-center space-x-4">
+        <button class="text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-bars text-base"></i>
+        </button>
+        <div class="flex items-center space-x-2">
+          <span class="text-xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-cyan-400 to-sky-400">
+            MediBox IoT
+          </span>
+        </div>
+      </div>
+
+      <!-- Right: Status Pills & Action Buttons -->
+      <div class="flex items-center space-x-3">
+        
+        <!-- Live SSE Pill -->
+        <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-[#151e2b] border border-slate-800 text-xs text-slate-300">
+          <span id="sse-indicator" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="sse-text" class="text-[11px] font-medium">Live SSE Connected</span>
+        </div>
+
+        <!-- 12-Hour Real-Time Clock Pill -->
+        <div class="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#151e2b] border border-slate-800 text-xs font-mono font-medium text-slate-200">
+          <i class="fa-regular fa-clock text-teal-400 text-xs"></i>
+          <span id="live-clock">09:14:42 pm</span>
+          <span id="live-date" class="hidden">Today</span>
+        </div>
+
+        <!-- Connect USB Button Pill -->
+        <button id="btn-usb-connect" class="px-3.5 py-1.5 bg-[#172230] hover:bg-[#1d2b3d] text-slate-200 border border-slate-700/80 rounded-full text-xs font-semibold flex items-center space-x-2 transition cursor-pointer shadow-sm">
+          <span id="usb-indicator" class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+          <i class="fa-brands fa-usb text-xs text-slate-400"></i>
+          <span id="usb-status-text">Connect USB</span>
+        </button>
+
+        <!-- Logged-in User Profile Pill -->
+        <button id="header-user-btn" onclick="switchView('home')" class="hidden sm:flex items-center space-x-2 px-3 py-1 bg-[#172230] hover:bg-[#1d2b3d] text-slate-200 border border-slate-700/80 rounded-full text-xs font-semibold transition shadow-sm cursor-pointer" title="View Patient Profile">
+          <span class="w-5 h-5 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 text-slate-900 font-black text-[10px] flex items-center justify-center" id="header-user-avatar">AM</span>
+          <span id="header-user-name" class="text-[11px] font-medium text-slate-300">Alex Morgan</span>
+        </button>
+
+        <!-- Day / Night Mode Toggle Icon (Functional) -->
+        <button id="theme-toggle" onclick="toggleTheme()" class="w-8 h-8 rounded-full bg-[#151e2b] hover:bg-[#1d2b3d] border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition cursor-pointer" title="Toggle Day/Night Mode">
+          <i id="theme-icon" class="fa-solid fa-moon text-xs text-amber-400"></i>
+        </button>
+
+        <!-- Sound / More Toggle -->
+        <button id="sound-toggle" class="w-8 h-8 rounded-full bg-[#151e2b] hover:bg-[#1d2b3d] border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition" title="Toggle Sound">
+          <i class="fa-solid fa-volume-high text-xs text-teal-400" id="sound-icon"></i>
+        </button>
+      </div>
+
+    </header>
+
+    <!-- CONTENT BODY CONTAINER -->
+    <main class="flex-1 w-full flex flex-col min-w-0">
+
+      <!-- ACTIVE ALARM POPUP BANNER (Hidden unless dose is active) -->
+      <div id="alarm-banner" class="hidden rounded-2xl p-4 border border-rose-500/50 bg-rose-950/40 backdrop-blur transition-all duration-300 shadow-xl flex items-center justify-between text-slate-100 mx-4 mt-3 max-w-7xl lg:mx-auto">
+        <div class="flex items-center space-x-3.5">
+          <div id="alarm-banner-icon" class="w-10 h-10 rounded-xl bg-rose-900/50 border border-rose-500/40 text-rose-400 flex items-center justify-center text-lg animate-bounce shrink-0">
+            <i class="fa-solid fa-bell"></i>
+          </div>
+          <div>
+            <h2 id="alarm-banner-title" class="text-sm font-bold text-rose-200">Dose Reminder Triggered</h2>
+            <p id="alarm-banner-desc" class="text-xs text-rose-300/80">Patient confirmation required.</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-3">
+          <div id="alarm-timer-box" class="text-right font-mono pr-4 border-r border-rose-800/80 hidden">
+            <div class="text-[10px] text-rose-400 uppercase font-bold tracking-wider">Timeout In</div>
+            <div id="alarm-countdown" class="text-2xl font-black text-rose-400">10.0s</div>
+          </div>
+          <button id="btn-patient-take" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 font-semibold text-white text-xs rounded-xl shadow-lg transition flex items-center space-x-2 cursor-pointer">
+            <i class="fa-solid fa-check text-xs"></i>
+            <span>Confirm Intake</span>
+          </button>
+          <button id="btn-banner-override" class="hidden px-4 py-2 bg-teal-600 hover:bg-teal-500 font-semibold text-white text-xs rounded-xl shadow-lg transition items-center space-x-2 cursor-pointer">
+            <i class="fa-solid fa-arrows-rotate text-xs"></i>
+            <span id="banner-override-text">Change to TAKEN</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ============================================================= -->
+      <!-- VIEW 1: PATIENT HOME (Full-Screen Picture Slider with Details Overlay) -->
+      <!-- ============================================================= -->
+      <div id="view-home" class="w-full flex-1 flex flex-col relative overflow-hidden" style="min-height: calc(100vh - 4rem);">
+
+        <!-- FULL-SCREEN HORIZONTAL SLIDING IMAGE CAROUSEL (Occupies All Space) -->
+        <div class="relative w-full h-full flex-1 overflow-hidden bg-[#090d14] select-none" style="height: calc(100vh - 4rem); min-height: 520px;">
+          
+          <!-- Sliding Track (Centered) -->
+          <div id="home-carousel-track" class="flex h-full w-full transition-transform duration-700 ease-in-out" style="transform: translateX(0%);">
+            
+            <!-- Slide 1: Modern Doctor Consultation -->
+            <div class="w-full shrink-0 basis-full h-full relative flex items-center justify-center">
+              <img src="/images/slide1.png" alt="Clinical Doctor Care" class="w-full h-full object-cover object-center">
+            </div>
+
+            <!-- Slide 2: Patient Healing & Pediatric Trust -->
+            <div class="w-full shrink-0 basis-full h-full relative flex items-center justify-center">
+              <img src="/images/slide2.png" alt="Patient Wellness Care" class="w-full h-full object-cover object-center">
+            </div>
+
+            <!-- Slide 3: Hospital Facility & Smart Beds -->
+            <div class="w-full shrink-0 basis-full h-full relative flex items-center justify-center">
+              <img src="/images/slide3.png" alt="Hospital Room" class="w-full h-full object-cover object-center">
+            </div>
+
+            <!-- Slide 4: World Health Organization -->
+            <div class="w-full shrink-0 basis-full h-full relative flex items-center justify-center">
+              <img src="/images/slide4.png?v=clean" alt="World Health Organization" class="w-full h-full object-cover object-center">
+            </div>
+
+          </div>
+
+          <!-- Subtle Dark Ambient Overlay for High Typography Contrast -->
+          <div class="absolute inset-0 bg-black/45 backdrop-blur-[1px] z-10 pointer-events-none"></div>
+
+          <!-- DETAILS ABOVE PICTURE (Centered Overlay) -->
+          <div class="absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-6 sm:p-10 pointer-events-none">
+            <div class="max-w-4xl mx-auto space-y-1 sm:space-y-3">
+              
+              <!-- Line 1: Welcome -->
+              <div class="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-wider uppercase bg-gradient-to-r from-blue-400 via-teal-300 via-emerald-400 to-white bg-clip-text text-transparent drop-shadow-[0_4px_25px_rgba(0,0,0,0.95)]">
+                Welcome
+              </div>
+
+              <!-- Line 2: User Name -->
+              <div class="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight bg-gradient-to-r from-blue-400 via-teal-300 via-emerald-400 to-white bg-clip-text text-transparent drop-shadow-[0_6px_30px_rgba(0,0,0,0.95)]">
+                <span id="home-greeting-name">Alex Morgan</span>
+              </div>
+
+              <!-- Line 3: Your health is -->
+              <div class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight bg-gradient-to-r from-sky-400 via-teal-300 via-emerald-400 to-white bg-clip-text text-transparent drop-shadow-[0_8px_35px_rgba(0,0,0,0.95)] pt-2 sm:pt-4">
+                Your health is
+              </div>
+
+              <!-- Line 4: Our priority -->
+              <div class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight bg-gradient-to-r from-sky-400 via-teal-300 via-emerald-400 to-white bg-clip-text text-transparent drop-shadow-[0_8px_35px_rgba(0,0,0,0.95)]">
+                Our priority
+              </div>
+
+              <!-- Quick Action to IoT Hardware Center -->
+              <div class="pt-6 sm:pt-8 pointer-events-auto">
+                <button onclick="switchView('telemetry')" class="px-8 py-3.5 rounded-full bg-gradient-to-r from-blue-500 via-teal-500 to-emerald-500 hover:from-blue-400 hover:to-emerald-400 text-white font-bold text-xs sm:text-sm shadow-2xl shadow-teal-500/40 transition-all transform hover:scale-105 flex items-center space-x-2.5 cursor-pointer backdrop-blur-md border border-white/20 mx-auto">
+                  <i class="fa-solid fa-microchip text-sm"></i>
+                  <span>Open IoT Hardware Controls</span>
+                  <i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Controls: Prev / Next Buttons -->
+          <button onclick="prevHomeSlide()" class="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-slate-900/70 hover:bg-slate-950 text-white/90 hover:text-white border border-white/20 backdrop-blur-md flex items-center justify-center transition shadow-2xl cursor-pointer z-30 hover:scale-105" aria-label="Previous Slide">
+            <i class="fa-solid fa-chevron-left text-sm"></i>
+          </button>
+          <button onclick="nextHomeSlide()" class="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-slate-900/70 hover:bg-slate-950 text-white/90 hover:text-white border border-white/20 backdrop-blur-md flex items-center justify-center transition shadow-2xl cursor-pointer z-30 hover:scale-105" aria-label="Next Slide">
+            <i class="fa-solid fa-chevron-right text-sm"></i>
+          </button>
+
+          <!-- Very Small White Dots (Centered at bottom) -->
+          <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center justify-center space-x-2.5 z-30">
+            <button onclick="goToHomeSlide(0)" class="home-slider-dot w-2 h-2 rounded-full bg-white shadow-sm shadow-white transition-all cursor-pointer" aria-label="Slide 1"></button>
+            <button onclick="goToHomeSlide(1)" class="home-slider-dot w-1.5 h-1.5 rounded-full bg-white/40 hover:bg-white/80 transition-all cursor-pointer" aria-label="Slide 2"></button>
+            <button onclick="goToHomeSlide(2)" class="home-slider-dot w-1.5 h-1.5 rounded-full bg-white/40 hover:bg-white/80 transition-all cursor-pointer" aria-label="Slide 3"></button>
+            <button onclick="goToHomeSlide(3)" class="home-slider-dot w-1.5 h-1.5 rounded-full bg-white/40 hover:bg-white/80 transition-all cursor-pointer" aria-label="Slide 4"></button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ============================================================= -->
+      <!-- VIEW 2: IOT HARDWARE TELEMETRY & CONTROL DASHBOARD -->
+      <!-- ============================================================= -->
+      <div id="view-telemetry" class="p-6 space-y-6 max-w-7xl mx-auto w-full hidden">
+
+        <!-- ROW 1: 4 TOP METRIC CARDS -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Card 1: ADHERENCE RATE (0% initially, green when >= 75%) -->
+        <div id="card-adherence-btn" class="card-dark p-4 cursor-pointer group">
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            ADHERENCE RATE
+          </div>
+          <div class="flex items-baseline space-x-2.5">
+            <span id="stat-adherence" class="text-2xl sm:text-3xl font-extrabold text-slate-400 font-mono tracking-tight">0%</span>
+            <span id="stat-adherence-badge" class="text-[11px] font-bold text-slate-400 bg-slate-800/80 border border-slate-700/60 px-2 py-0.5 rounded-full">
+              No Data
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 2: TAKEN ON TIME (0 initially, green dot when > 0) -->
+        <div class="card-dark p-4 relative">
+          <span id="dot-taken" class="hidden absolute top-4 right-4 w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/80 animate-pulse" title="Doses Taken"></span>
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            TAKEN ON TIME
+          </div>
+          <div class="flex items-baseline space-x-2">
+            <span id="stat-taken" class="text-2xl sm:text-3xl font-extrabold text-slate-300 font-mono tracking-tight">0</span>
+            <span class="text-xs text-slate-400 font-medium">doses</span>
+          </div>
+        </div>
+
+        <!-- Card 3: MISSED DOSES (0 initially, red dot when > 0) -->
+        <div class="card-dark p-4 relative">
+          <span id="dot-missed" class="hidden absolute top-4 right-4 w-2 h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-500/80 animate-pulse" title="Doses Missed"></span>
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            MISSED DOSES
+          </div>
+          <div class="flex items-baseline space-x-1.5">
+            <span id="stat-missed" class="text-2xl sm:text-3xl font-extrabold text-slate-300 font-mono tracking-tight">0</span>
+            <span class="text-xs text-slate-400 font-medium">doses</span>
+          </div>
+        </div>
+
+        <!-- Card 4: TOTAL CYCLES (0 initially, red+green dot when > 0) -->
+        <div class="card-dark p-4 relative">
+          <div id="dot-total" class="hidden absolute top-4 right-4 flex items-center space-x-1.5" title="Combination of Taken & Missed">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/80"></span>
+            <span class="w-2 h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-500/80"></span>
+          </div>
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            TOTAL CYCLES
+          </div>
+          <div class="flex items-baseline space-x-2">
+            <span id="stat-total" class="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight">0</span>
+          </div>
+          <div class="text-[10px] font-mono mt-1 flex items-center space-x-1.5">
+            <span id="stat-total-taken-pill" class="text-slate-400 font-semibold">0 Taken</span>
+            <span class="text-slate-500">•</span>
+            <span id="stat-total-missed-pill" class="text-slate-400 font-semibold">0 Missed</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ROW 2: MAIN 2-COLUMN SPLIT (Exact layout as image) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- LEFT 7 COLS: HARDWARE TELEMETRY & DOSE SCHEDULE -->
+        <div class="lg:col-span-7 space-y-6">
+
+          <!-- SECTION 1: HARDWARE TELEMETRY -->
+          <div class="card-dark p-5 space-y-4">
+            
+            <div class="flex items-center justify-between">
+              <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                HARDWARE TELEMETRY
+              </h2>
+              
+              <!-- Hardware Link Pill Button -->
+              <button id="btn-usb-connect-twin" class="px-3 py-1 rounded-full bg-[#182332] hover:bg-[#1f2c3f] border border-slate-700/80 text-[11px] font-semibold text-slate-300 transition flex items-center space-x-1.5 cursor-pointer">
+                <span id="hardware-link-dot" class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                <span id="btn-usb-twin-text">Hardware Link</span>
+              </button>
+            </div>
+
+            <!-- Row 1: 3 LED Cards (Morning, Afternoon, Night) -->
+            <div class="grid grid-cols-3 gap-3">
+              
+              <!-- Morning Tile -->
+              <div id="card-led-1" class="tile-dark rounded-xl p-3 flex items-center justify-between transition-all cursor-pointer">
+                <div class="flex items-center space-x-2">
+                  <i class="fa-regular fa-sun text-slate-400 text-xs" id="led-morning"></i>
+                  <span class="text-xs font-semibold text-slate-200">Morning</span>
+                </div>
+                <span id="led-status-1" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-bold border border-slate-700/60">OFF</span>
+                <span id="led-time-1" class="hidden">08:00 AM</span>
+              </div>
+
+              <!-- Afternoon Tile -->
+              <div id="card-led-2" class="tile-dark rounded-xl p-3 flex items-center justify-between transition-all cursor-pointer">
+                <div class="flex items-center space-x-2">
+                  <i class="fa-solid fa-sun text-slate-400 text-xs" id="led-afternoon"></i>
+                  <span class="text-xs font-semibold text-slate-200">Afternoon</span>
+                </div>
+                <span id="led-status-2" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-bold border border-slate-700/60">OFF</span>
+                <span id="led-time-2" class="hidden">01:30 PM</span>
+              </div>
+
+              <!-- Night Tile -->
+              <div id="card-led-3" class="tile-dark rounded-xl p-3 flex items-center justify-between transition-all cursor-pointer">
+                <div class="flex items-center space-x-2">
+                  <i class="fa-regular fa-moon text-slate-400 text-xs" id="led-night"></i>
+                  <span class="text-xs font-semibold text-slate-200">Night</span>
+                </div>
+                <span id="led-status-3" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-bold border border-slate-700/60">OFF</span>
+                <span id="led-time-3" class="hidden">08:00 PM</span>
+              </div>
+
+            </div>
+
+            <!-- Row 2: Buzzer, Push Button, Status -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              
+              <!-- Buzzer Card -->
+              <div class="tile-dark rounded-xl p-3 flex items-center space-x-2.5">
+                <i class="fa-solid fa-volume-high text-slate-400 text-xs" id="buzzer-icon"></i>
+                <span class="text-xs font-semibold text-slate-200">Buzzer</span>
+                <span id="buzzer-badge" class="ml-auto">
+                  <span id="buzzer-state-text" class="text-[10px] text-slate-400">Silent</span>
+                </span>
+              </div>
+
+              <!-- Press Button Card -->
+              <button id="hardware-btn-press" class="tile-dark rounded-xl p-3 flex items-center space-x-2.5 hover:border-teal-500/40 text-left transition cursor-pointer">
+                <i class="fa-regular fa-circle-dot text-slate-400 text-xs"></i>
+                <span class="text-xs font-semibold text-slate-200">Press Button</span>
+              </button>
+
+              <!-- Live System State Tile -->
+              <div id="card-system-status" class="tile-dark rounded-xl p-3 flex items-center space-x-2.5">
+                <span id="telemetry-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-xs font-semibold text-slate-200">System</span>
+                <span id="telemetry-status-text" class="ml-auto text-[10px] px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-300 font-bold border border-emerald-500/30">Monitoring</span>
+              </div>
+
+            </div>
+
+            <!-- Hidden OLED compatibility elements -->
+            <div class="hidden" aria-hidden="true">
+              <span id="oled-line1">SMART MEDIBOX</span>
+              <span id="oled-clock">12:00:00</span>
+              <div id="oled-line2">--:--:--</div>
+              <div id="oled-line3">Status: Monitoring</div>
+              <span id="hardware-link-badge"><span id="hardware-link-text">USB</span></span>
+              <div id="usb-banner"><span id="usb-banner-title"></span><span id="usb-banner-desc"></span></div>
+            </div>
+
+          </div>
+
+          <!-- SECTION 2: DOSE SCHEDULE -->
+          <div class="card-dark p-5 space-y-4">
+            
+            <div class="flex items-center justify-between">
+              <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                DOSE SCHEDULE
+              </h2>
+              <button onclick="document.getElementById('schedule-drawer-backdrop').classList.remove('hidden'); setTimeout(() => { document.getElementById('schedule-drawer-backdrop').classList.remove('opacity-0'); document.getElementById('schedule-drawer').classList.remove('translate-x-full'); }, 20);" class="px-3 py-1 rounded-full bg-[#182332] hover:bg-[#1f2c3f] border border-slate-700/80 text-[11px] font-semibold text-slate-300 transition flex items-center space-x-1.5 cursor-pointer">
+                <i class="fa-solid fa-pencil text-[10px] text-slate-400"></i>
+                <span>Edit Times</span>
+              </button>
+            </div>
+
+            <!-- Dose Rows -->
+            <div class="space-y-2">
+              
+              <!-- Dose 1: Morning -->
+              <div class="tile-dark rounded-xl px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <span class="w-2 h-2 rounded-full bg-teal-400 shadow-xs shadow-teal-400/50"></span>
+                  <span class="text-xs font-semibold text-slate-300 w-24">Morning</span>
+                  <span class="text-xs text-slate-400 font-mono">Dose 1: Med-A • <strong id="summary-time-1" class="text-slate-300">08:00 AM</strong></span>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <button id="sim-dose-1" class="text-xs text-slate-400 hover:text-teal-300 transition" title="Trigger Dose 1">
+                    <i class="fa-solid fa-play text-[10px]"></i>
+                    <span id="sim-time-1" class="hidden">08:00 AM</span>
+                  </button>
+                  <i class="fa-solid fa-check text-xs text-teal-400"></i>
+                </div>
+              </div>
+
+              <!-- Dose 2: Afternoon -->
+              <div class="tile-dark rounded-xl px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <span class="w-2 h-2 rounded-full bg-teal-400 shadow-xs shadow-teal-400/50"></span>
+                  <span class="text-xs font-semibold text-slate-300 w-24">Afternoon</span>
+                  <span class="text-xs text-slate-400 font-mono">Dose 2: Med-B • <strong id="summary-time-2" class="text-slate-300">01:30 PM</strong></span>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <button id="sim-dose-2" class="text-xs text-slate-400 hover:text-teal-300 transition" title="Trigger Dose 2">
+                    <i class="fa-solid fa-play text-[10px]"></i>
+                    <span id="sim-time-2" class="hidden">01:30 PM</span>
+                  </button>
+                  <i class="fa-solid fa-check text-xs text-teal-400"></i>
+                </div>
+              </div>
+
+              <!-- Dose 3: Night -->
+              <div class="tile-dark rounded-xl px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <i class="fa-regular fa-moon text-teal-400 text-xs"></i>
+                  <span class="text-xs font-semibold text-slate-300 w-24">Night</span>
+                  <span class="text-xs text-slate-400 font-mono">Dose 3: Med-C • <strong id="summary-time-3" class="text-slate-300">08:00 PM</strong></span>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <button id="sim-dose-3" class="text-xs text-slate-400 hover:text-teal-300 transition" title="Trigger Dose 3">
+                    <i class="fa-solid fa-play text-[10px]"></i>
+                    <span id="sim-time-3" class="hidden">08:00 PM</span>
+                  </button>
+                  <i class="fa-solid fa-check text-xs text-teal-400"></i>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Hidden simulator compatibility elements -->
+            <span id="endpoint-url" class="hidden"></span>
+            <button id="copy-endpoint-btn" class="hidden"></button>
+
+          </div>
+
+        </div>
+
+        <!-- RIGHT 5 COLS: ADHERENCE BREAKDOWN & CHART (Exact match to image) -->
+        <div class="lg:col-span-5 space-y-6">
+          
+          <section id="adherence-breakdown-card" class="card-dark p-5 space-y-4">
+            
+            <div class="flex items-center justify-between">
+              <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                ADHERENCE BREAKDOWN
+              </h2>
+              <span class="text-xs font-semibold text-cyan-400">Real-Time</span>
+            </div>
+
+            <!-- Glowing Circular Ring Donut -->
+            <div class="flex flex-col items-center justify-center relative py-2">
+              
+              <!-- Tooltip Popup -->
+              <div id="chart-3d-tooltip" class="absolute z-20 pointer-events-none opacity-0 transition-opacity duration-200 bg-[#0d141e]/95 backdrop-blur border border-slate-700 px-3.5 py-2 rounded-xl shadow-2xl text-center min-w-[170px]">
+                <div id="tip-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full inline-block mb-1">CATEGORY</div>
+                <div id="tip-title" class="text-xs font-bold text-white">Hover slice</div>
+                <div id="tip-count" class="text-lg font-bold font-mono text-cyan-400 my-0.5">0 Doses</div>
+                <div id="tip-percent" class="text-xs text-slate-400 font-mono">0%</div>
+                <div id="tip-desc" class="hidden">Details</div>
+              </div>
+
+              <!-- SVG Donut Ring with Neon Glow -->
+              <div id="stage-3d" class="relative w-56 h-56 flex items-center justify-center">
+                <svg id="svg-3d-donut" viewBox="0 0 400 400" class="w-full h-full donut-glow">
+                  <defs>
+                    <linearGradient id="grad-taken-top" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#22d3ee"/>
+                      <stop offset="100%" stop-color="#0d9488"/>
+                    </linearGradient>
+                    <linearGradient id="grad-taken-side" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="#0284c7"/>
+                      <stop offset="100%" stop-color="#0f766e"/>
+                    </linearGradient>
+
+                    <linearGradient id="grad-missed-top" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#fb7185"/>
+                      <stop offset="100%" stop-color="#e11d48"/>
+                    </linearGradient>
+                    <linearGradient id="grad-missed-side" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="#be123c"/>
+                      <stop offset="100%" stop-color="#9f1239"/>
+                    </linearGradient>
+                  </defs>
+
+                  <g id="donut-3d-layers"></g>
+                </svg>
+
+                <!-- Center Hub (0% initially) -->
+                <div id="donut-center-hub" class="absolute pointer-events-none flex flex-col items-center justify-center text-center p-2 rounded-full bg-[#101722]/90 border border-slate-700/60 shadow-xl" style="width: 108px; height: 108px;">
+                  <span id="center-adherence-pct" class="text-3xl font-black text-white font-mono leading-none tracking-tight">0%</span>
+                  <span id="center-adherence-label" class="text-[10px] text-slate-400 font-semibold mt-1">No Data</span>
+                </div>
+              </div>
+
+              <!-- Quick Donut Legend Pills (Taken vs Missed) -->
+              <div class="flex items-center justify-center space-x-4 pt-1 text-[11px]">
+                <div class="flex items-center space-x-1.5 text-slate-300">
+                  <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400/50"></span>
+                  <span class="font-medium">Taken:</span>
+                  <span id="donut-taken-count" class="font-bold text-cyan-300 font-mono">0</span>
+                </div>
+                <div class="flex items-center space-x-1.5 text-slate-300">
+                  <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50"></span>
+                  <span class="font-medium">Missed:</span>
+                  <span id="donut-missed-count" class="font-bold text-rose-300 font-mono">0</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Adherence Bar Chart (Real-Time: Doses Taken in Morning, Evening, Night) -->
+            <div class="pt-3 border-t border-slate-800/80 relative">
+              <div class="flex items-center justify-between text-[11px] font-bold text-slate-300 pb-2.5">
+                <span class="flex items-center space-x-1.5">
+                  <i class="fa-solid fa-chart-column text-teal-400 text-xs"></i>
+                  <span>DOSES TAKEN BY TIME</span>
+                </span>
+                <span id="chart-total-taken-badge" class="font-mono text-teal-300 text-[10px] bg-teal-950/70 px-2.5 py-0.5 rounded-full border border-teal-500/30">Total: 0 Taken</span>
+              </div>
+
+              <div class="flex items-end space-x-3 h-32 px-3 pb-2">
+                
+                <!-- Y-Axis Scale (Adapts dynamically to max count) -->
+                <div class="flex flex-col justify-between h-full text-[9px] font-mono text-slate-500 pr-1 pb-5">
+                  <span id="chart-y-max">4</span>
+                  <span id="chart-y-mid">2</span>
+                  <span id="chart-y-low">1</span>
+                  <span>0</span>
+                </div>
+
+                <!-- 3 Clear Bars: Morning, Evening, Night -->
+                <div class="flex-1 flex items-end justify-around h-full border-b border-slate-700/80 pb-1">
+                  
+                  <!-- Bar 1: Morning Doses Taken -->
+                  <div class="flex flex-col items-center w-14 group cursor-pointer" title="Morning Doses Taken">
+                    <span id="count-bar-morning" class="text-[11px] font-bold font-mono text-cyan-300 mb-1 transition-transform group-hover:scale-110">0</span>
+                    <div id="chart-bar-morning" class="w-full bg-gradient-to-t from-teal-500 to-cyan-400 rounded-t-md transition-all duration-500 shadow-md shadow-cyan-400/25 min-h-[4px]" style="height: 4px;"></div>
+                    <span class="text-[10px] text-slate-300 mt-2 font-medium flex items-center gap-1">
+                      <i class="fa-regular fa-sun text-[10px] text-cyan-400"></i> Morning
+                    </span>
+                  </div>
+
+                  <!-- Bar 2: Afternoon Doses Taken -->
+                  <div class="flex flex-col items-center w-14 group cursor-pointer" title="Afternoon Doses Taken">
+                    <span id="count-bar-afternoon" class="text-[11px] font-bold font-mono text-amber-300 mb-1 transition-transform group-hover:scale-110">0</span>
+                    <div id="chart-bar-afternoon" class="w-full bg-gradient-to-t from-amber-500 to-amber-300 rounded-t-md transition-all duration-500 shadow-md shadow-amber-400/25 min-h-[4px]" style="height: 4px;"></div>
+                    <span class="text-[10px] text-slate-300 mt-2 font-medium flex items-center gap-1">
+                      <i class="fa-solid fa-sun text-[10px] text-amber-400"></i> Afternoon
+                    </span>
+                  </div>
+
+                  <!-- Bar 3: Night Doses Taken -->
+                  <div class="flex flex-col items-center w-14 group cursor-pointer" title="Night Doses Taken">
+                    <span id="count-bar-night" class="text-[11px] font-bold font-mono text-rose-300 mb-1 transition-transform group-hover:scale-110">0</span>
+                    <div id="chart-bar-night" class="w-full bg-gradient-to-t from-rose-500 to-rose-400 rounded-t-md transition-all duration-500 shadow-md shadow-rose-400/25 min-h-[4px]" style="height: 4px;"></div>
+                    <span class="text-[10px] text-slate-300 mt-2 font-medium flex items-center gap-1">
+                      <i class="fa-regular fa-moon text-[10px] text-rose-400"></i> Night
+                    </span>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <!-- Bottom Right Star Accent (From design) -->
+              <div class="absolute bottom-1 right-2 text-slate-500/60 text-sm select-none">
+                ✦
+              </div>
+            </div>
+
+            <!-- Hidden elements preserved for JS compatibility -->
+            <div class="hidden" aria-hidden="true">
+              <div id="legend-card-taken"><span id="count-taken"></span><div id="bar-taken"></div><span id="pct-taken"></span></div>
+              <div id="legend-card-missed"><span id="count-missed"></span><div id="bar-missed"></div><span id="pct-missed"></span></div>
+              <div id="legend-card-manual"><span id="count-manual"></span><div id="bar-manual"></div><span id="pct-manual"></span></div>
+              <div id="chart-bar-other"></div>
+            </div>
+
+          </section>
+
+        </div>
+
+      </div>
+
+      <!-- ROW 3: RECENT ACTIVITY LOG (Collapsible Clean Dark Table) -->
+      <section id="history-section" class="card-dark overflow-hidden">
+        <div class="p-4 border-b border-slate-800/80 flex items-center justify-between">
+          <div class="flex items-center space-x-2.5">
+            <span class="w-2 h-2 rounded-full bg-teal-400"></span>
+            <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Activity Log</h2>
+            <span id="dose-record-count-badge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">0 Records</span>
+          </div>
+          <button id="btn-reset-stats" class="text-xs text-slate-400 hover:text-rose-400 px-3 py-1 bg-slate-800 hover:bg-rose-950/40 rounded-lg border border-slate-700 hover:border-rose-800/80 transition cursor-pointer">
+            <i class="fa-solid fa-trash-can mr-1"></i> Clear
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#0f1622] text-slate-400 font-semibold border-b border-slate-800 text-[11px] uppercase tracking-wider">
+              <tr>
+                <th class="px-5 py-3">Timestamp</th>
+                <th class="px-5 py-3">Dose</th>
+                <th class="px-5 py-3">Status</th>
+                <th class="px-5 py-3">Response</th>
+                <th class="px-5 py-3">Details</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body" class="divide-y divide-slate-800/60 font-mono text-slate-300">
+              <tr>
+                <td colspan="5" class="px-5 py-6 text-center text-slate-500 font-sans text-xs">
+                  No activity records yet.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      </div> <!-- End of #view-telemetry -->
+
+    </main>
+
+  </div>
+
+  <!-- SLIDING SCHEDULE DRAWER (Sleek Dark Slide-Over Modal) -->
+  <div id="schedule-drawer-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity duration-300 opacity-0 hidden"></div>
+
+  <div id="schedule-drawer" class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-[#0d141f] shadow-2xl border-l border-slate-800 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between">
+    
+    <!-- Drawer Header -->
+    <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-teal-500/20 border border-teal-500/30 text-teal-400 flex items-center justify-center text-sm shadow-sm">
+          <i class="fa-regular fa-clock"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-base text-white">Configure Schedule</h3>
+          <p class="text-xs text-slate-400">Set daily dose times (12-Hour AM/PM)</p>
+        </div>
+      </div>
+      
+      <button id="btn-close-schedule-drawer" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </button>
+    </div>
+
+    <!-- Drawer Body -->
+    <div class="p-6 space-y-4 overflow-y-auto custom-scroll flex-1">
+      <div class="flex items-center justify-between pb-1">
+        <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Scheduled Times</span>
+        <span class="text-[10px] text-teal-300 bg-teal-950/60 border border-teal-500/40 font-mono font-bold px-2 py-0.5 rounded-full" id="schedule-save-status">Armed</span>
+      </div>
+
+      <!-- Dose 1 -->
+      <div class="tile-dark rounded-xl p-4 space-y-2 border border-slate-800">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-teal-400"></span>
+            <span class="text-xs font-bold text-white">Dose 1 (Morning)</span>
+          </div>
+          <span class="text-[10px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">GPIO 19</span>
+        </div>
+        <div class="flex items-center space-x-2 pt-1">
+          <div class="flex-1 flex items-center space-x-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-1.5">
+            <input type="number" id="h-dose-1" min="1" max="12" value="8" title="Hour (1-12)" class="w-12 bg-transparent text-center text-white font-bold font-mono text-sm focus:outline-none">
+            <span class="text-slate-500 font-bold">:</span>
+            <input type="number" id="m-dose-1" min="0" max="59" value="0" title="Minute (0-59)" class="w-12 bg-transparent text-center text-white font-bold font-mono text-sm focus:outline-none">
+          </div>
+          <select id="ampm-dose-1" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-bold focus:outline-none">
+            <option value="AM" selected>AM</option>
+            <option value="PM">PM</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Dose 2 -->
+      <div class="tile-dark rounded-xl p-4 space-y-2 border border-slate-800">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+            <span class="text-xs font-bold text-white">Dose 2 (Afternoon)</span>
+          </div>
+          <span class="text-[10px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">GPIO 18</span>
+        </div>
+        <div class="flex items-center space-x-2 pt-1">
+          <div class="flex-1 flex items-center space-x-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-1.5">
+            <input type="number" id="h-dose-2" min="1" max="12" value="1" title="Hour (1-12)" class="w-12 bg-transparent text-center text-white font-bold font-mono text-sm focus:outline-none">
+            <span class="text-slate-500 font-bold">:</span>
+            <input type="number" id="m-dose-2" min="0" max="59" value="30" title="Minute (0-59)" class="w-12 bg-transparent text-center text-white font-bold font-mono text-sm focus:outline-none">
+          </div>
+          <select id="ampm-dose-2" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-bold focus:outline-none">
+            <option value="AM">AM</option>
+            <option value="PM" selected>PM</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Dose 3 -->
+      <div class="tile-dark rounded-xl p-4 space-y-2 border border-slate-800">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span>
+            <span class="text-xs font-bold text-white">Dose 3 (Night)</span>
+          </div>
+          <span class="text-[10px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">GPIO 5</span>
+        </div>
+        <div class="flex items-center space-x-2 pt-1">
+          <div class="flex-1 flex items-center space-x-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-1.5">
+            <input type="number" id="h-dose-3" min="1" max="12" value="8" title="Hour (1-12)" class="w-12 bg-transparent text-center text-white font-bold font-mono text-sm focus:outline-none">
+            <span class="text-slate-500 font-bold">:</span>
+            <input type="number" id="m-dose-3" min="0" max="59" value="0" title="Minute (0-59)" class="w-12 bg-transparent text-center text-white font-bold font-mono text-sm focus:outline-none">
+          </div>
+          <select id="ampm-dose-3" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-bold focus:outline-none">
+            <option value="AM">AM</option>
+            <option value="PM" selected>PM</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Drawer Footer Actions -->
+    <div class="p-6 border-t border-slate-800 bg-[#090d14] space-y-2">
+      <button id="btn-save-schedule" class="w-full py-2.5 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 shadow-lg shadow-teal-500/20 cursor-pointer">
+        <i class="fa-solid fa-floppy-disk text-xs"></i>
+        <span>Save & Arm Timers</span>
+      </button>
+      <button id="btn-cancel-schedule-drawer" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition cursor-pointer">
+        Cancel
+      </button>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- HELP & FAQ MODAL (Comprehensive User & System Guide) -->
+  <!-- ================================================================= -->
+  <div id="help-modal-backdrop" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 transition-opacity duration-300 opacity-0 hidden flex items-center justify-center p-4 sm:p-6">
+    <div id="help-modal" class="bg-[#0f1724] border border-slate-700/80 rounded-2xl w-full max-w-2xl max-h-[88vh] shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-300">
+      
+      <!-- Modal Header -->
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-[#0b1017]">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-teal-500/20 border border-teal-500/40 text-teal-400 flex items-center justify-center text-sm shadow-sm">
+            <i class="fa-regular fa-circle-question"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-white">Help & Frequently Asked Questions</h3>
+            <p class="text-xs text-slate-400">Everything you need to know about the MediBox system</p>
+          </div>
+        </div>
+        <button id="btn-close-help-modal" onclick="closeHelpModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Custom scroll Q&A Cards) -->
+      <div class="p-6 space-y-4 overflow-y-auto custom-scroll flex-1 text-xs text-slate-300">
+        
+        <!-- Q1: What is MediBox? -->
+        <div class="tile-dark rounded-xl p-4 border border-slate-800/80 space-y-2">
+          <div class="flex items-center space-x-2.5 text-teal-300 font-bold text-sm">
+            <i class="fa-solid fa-circle-info text-teal-400 text-xs"></i>
+            <h4>What is this Medical Box system?</h4>
+          </div>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            <strong>MediBox IoT</strong> is an intelligent medication adherence assistant. It connects a physical hardware dispenser box (fitted with 3 scheduled indicator lights, a loud buzzer alarm, and a patient confirmation button) to this live web platform. It ensures patients take their pills at the exact prescribed hours while automatically logging response times and adherence statistics.
+          </p>
+        </div>
+
+        <!-- Q2: How do I use this system? -->
+        <div class="tile-dark rounded-xl p-4 border border-slate-800/80 space-y-2.5">
+          <div class="flex items-center space-x-2.5 text-cyan-300 font-bold text-sm">
+            <i class="fa-solid fa-list-ol text-cyan-400 text-xs"></i>
+            <h4>How do I use this system? (Step-by-Step)</h4>
+          </div>
+          <div class="space-y-2 text-slate-300 text-xs leading-relaxed">
+            <div class="flex items-start space-x-2">
+              <span class="w-5 h-5 rounded-full bg-teal-500/20 text-teal-300 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
+              <p><strong>Connect the Hardware:</strong> Plug your ESP32 box into your PC with a USB data cable and click <strong>"Connect USB"</strong> in the top header.</p>
+            </div>
+            <div class="flex items-start space-x-2">
+              <span class="w-5 h-5 rounded-full bg-teal-500/20 text-teal-300 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
+              <p><strong>Set Dose Times:</strong> Click <strong>"Schedule"</strong> or <strong>"Edit Times"</strong> to configure your Morning, Afternoon, and Night reminder hours in simple 12-Hour AM/PM format.</p>
+            </div>
+            <div class="flex items-start space-x-2">
+              <span class="w-5 h-5 rounded-full bg-teal-500/20 text-teal-300 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
+              <p><strong>Alarm Reminder:</strong> When dose time arrives, the matching light flashes and the buzzer sounds for 10 seconds.</p>
+            </div>
+            <div class="flex items-start space-x-2">
+              <span class="w-5 h-5 rounded-full bg-teal-500/20 text-teal-300 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">4</span>
+              <p><strong>Take Pill & Confirm:</strong> Take your medication and press the physical button on the box (or click <strong>"Confirm Intake"</strong> on this screen) within 10 seconds.</p>
+            </div>
+            <div class="flex items-start space-x-2">
+              <span class="w-5 h-5 rounded-full bg-teal-500/20 text-teal-300 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">5</span>
+              <p><strong>Track Adherence:</strong> Review your adherence rate, historical logs, and timing trends anytime right here.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q3: What do the 3 Lights Mean? -->
+        <div class="tile-dark rounded-xl p-4 border border-slate-800/80 space-y-2">
+          <div class="flex items-center space-x-2.5 text-amber-300 font-bold text-sm">
+            <i class="fa-solid fa-lightbulb text-amber-400 text-xs"></i>
+            <h4>What do the 3 indicator lights (LEDs) mean?</h4>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+            <div class="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
+              <div class="flex items-center space-x-1.5 font-bold text-emerald-400 mb-1">
+                <span>🟢 Morning (GPIO 19)</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Flashes for morning dose (default 08:00 AM).</p>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
+              <div class="flex items-center space-x-1.5 font-bold text-amber-400 mb-1">
+                <span>🟡 Afternoon (GPIO 18)</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Flashes for afternoon dose (default 01:30 PM).</p>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
+              <div class="flex items-center space-x-1.5 font-bold text-rose-400 mb-1">
+                <span>🔴 Night (GPIO 5)</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Flashes for evening/night dose (default 08:00 PM).</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q4: Alarm & 10-Second Window -->
+        <div class="tile-dark rounded-xl p-4 border border-slate-800/80 space-y-2">
+          <div class="flex items-center space-x-2.5 text-rose-300 font-bold text-sm">
+            <i class="fa-solid fa-bell text-rose-400 text-xs"></i>
+            <h4>What happens during an alarm? (10-Second Rule)</h4>
+          </div>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            When a reminder time triggers, the buzzer sounds and the active LED flashes. You have <strong>10 seconds</strong> to press the button:
+          </p>
+          <ul class="list-disc list-inside space-y-1 text-slate-300 pl-1 text-[11px]">
+            <li><strong class="text-emerald-400">If pressed on time:</strong> The buzzer immediately silences, the OLED screen smiles with <em>"TAKEN ON TIME! :)"</em>, and the dashboard marks the dose as <strong>TAKEN</strong>.</li>
+            <li><strong class="text-rose-400">If 10 seconds elapse with no press:</strong> The buzzer stops, the screen displays <em>"MISSED! :("</em>, and the dashboard records a <strong>MISSED</strong> alert so you or a caregiver can follow up.</li>
+          </ul>
+        </div>
+
+        <!-- Q5: How USB Cable Link Works -->
+        <div class="tile-dark rounded-xl p-4 border border-slate-800/80 space-y-2">
+          <div class="flex items-center space-x-2.5 text-sky-300 font-bold text-sm">
+            <i class="fa-brands fa-usb text-sky-400 text-xs"></i>
+            <h4>How does the direct USB Cable link work?</h4>
+          </div>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            This dashboard uses the modern <strong>Web Serial API</strong> supported natively in Google Chrome, Microsoft Edge, and Opera. When you click <strong>"Connect USB"</strong>, your browser opens a high-speed direct COM port link (115200 baud) to the ESP32. This enables instant bidirectional hardware control even when this website is hosted online on <strong>Vercel</strong> or <strong>GitHub</strong>!
+          </p>
+        </div>
+
+        <!-- Q6: What is Adherence Rate? -->
+        <div class="tile-dark rounded-xl p-4 border border-slate-800/80 space-y-2">
+          <div class="flex items-center space-x-2.5 text-emerald-300 font-bold text-sm">
+            <i class="fa-solid fa-chart-pie text-emerald-400 text-xs"></i>
+            <h4>What does the Adherence Rate mean?</h4>
+          </div>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            The adherence percentage in the circular donut gauge measures your consistency:
+            <br>
+            • <strong class="text-emerald-400">80% – 100%:</strong> Optimal / Healthy (You consistently take medicines on time).
+            <br>
+            • <strong class="text-amber-400">50% – 79%:</strong> Moderate (Some doses missed, room for improvement).
+            <br>
+            • <strong class="text-rose-400">Below 50%:</strong> Low Adherence (Frequent missed medication, needs attention).
+          </p>
+        </div>
+
+        <!-- Q7: Test Triggers -->
+        <div class="tile-dark rounded-xl p-4 border border-slate-800/80 space-y-2">
+          <div class="flex items-center space-x-2.5 text-purple-300 font-bold text-sm">
+            <i class="fa-solid fa-flask text-purple-400 text-xs"></i>
+            <h4>Can I test the lights and buzzer right now?</h4>
+          </div>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Yes! In the <strong>DOSE SCHEDULE</strong> panel, click the small <strong>Play (▶)</strong> icon on Morning, Afternoon, or Night. It will immediately trigger a 10-second test alarm on your physical box (and this website) so you can test without waiting for the scheduled hour!
+          </p>
+        </div>
+
+        <!-- Q8: Manual Correction -->
+        <div class="tile-dark rounded-xl p-4 border border-slate-800/80 space-y-2">
+          <div class="flex items-center space-x-2.5 text-blue-300 font-bold text-sm">
+            <i class="fa-solid fa-arrows-rotate text-blue-400 text-xs"></i>
+            <h4>Can I correct a mistaken status?</h4>
+          </div>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Yes. In the <strong>Activity Log</strong> table at the bottom, every recorded dose has a switch button. If you pressed the button by accident or took the pill 1 minute later, click the switch button to toggle between <strong>TAKEN</strong> and <strong>MISSED</strong>.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-slate-800 bg-[#0b1017] flex items-center justify-between">
+        <span class="text-[11px] text-slate-500 font-mono">MediBox IoT • Version 2.0</span>
+        <button id="btn-done-help-modal" onclick="closeHelpModal()" class="px-5 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md shadow-teal-500/20">
+          Got It!
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- ADHERENCE & HEALTH ANALYTICS MODAL (Dedicated Window) -->
+  <!-- ================================================================= -->
+  <div id="adherence-modal-backdrop" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 transition-opacity duration-300 opacity-0 hidden flex items-center justify-center p-3 sm:p-6">
+    <div id="adherence-modal" class="bg-[#0e1622] border border-slate-700/80 rounded-2xl w-full max-w-4xl max-h-[92vh] shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-300">
+      
+      <!-- Modal Header -->
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-[#0a0f16]">
+        <div class="flex items-center space-x-3.5">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20 border border-teal-500/40 text-teal-400 flex items-center justify-center text-lg shadow-sm">
+            <i class="fa-solid fa-heart-pulse"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h3 class="font-extrabold text-base text-white tracking-tight">Adherence & Health Analytics</h3>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-teal-950 text-teal-300 border border-teal-500/40 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span> Live Intelligence
+              </span>
+            </div>
+            <p class="text-xs text-slate-400">Clinical dosage consistency & predictive health outcome evaluation</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="btn-close-adherence-modal" onclick="closeAdherenceModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer">
+            <i class="fa-solid fa-xmark text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body (Custom Scroll) -->
+      <div class="p-6 space-y-6 overflow-y-auto custom-scroll flex-1">
+        
+        <!-- 4 Key Health KPIs -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+          
+          <!-- KPI 1: Overall Adherence -->
+          <div class="tile-dark rounded-xl p-4 border border-slate-800/80 space-y-1">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Adherence Score</span>
+            <div class="flex items-baseline space-x-2">
+              <span id="modal-stat-adherence" class="text-2xl font-black font-mono text-cyan-400">100%</span>
+              <span id="modal-badge-condition" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/30">Stable</span>
+            </div>
+            <span class="text-[11px] text-slate-500 block">Overall compliance rate</span>
+          </div>
+
+          <!-- KPI 2: Intake Success Rate -->
+          <div class="tile-dark rounded-xl p-4 border border-slate-800/80 space-y-1">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Intake Success</span>
+            <div class="flex items-baseline space-x-1.5">
+              <span id="modal-stat-taken" class="text-2xl font-black font-mono text-white">0</span>
+              <span class="text-xs text-slate-400">/</span>
+              <span id="modal-stat-total" class="text-sm font-bold font-mono text-slate-400">0 Doses</span>
+            </div>
+            <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1">
+              <div id="modal-bar-success" class="bg-gradient-to-r from-teal-400 to-cyan-400 h-full rounded-full transition-all duration-500" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <!-- KPI 3: Missed Risk Doses -->
+          <div class="tile-dark rounded-xl p-4 border border-slate-800/80 space-y-1">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Missed Doses</span>
+            <div class="flex items-baseline space-x-2">
+              <span id="modal-stat-missed" class="text-2xl font-black font-mono text-rose-400">0</span>
+              <span class="text-[11px] text-slate-400">lapses</span>
+            </div>
+            <span id="modal-stat-missed-desc" class="text-[11px] text-emerald-400 block">No treatment gaps</span>
+          </div>
+
+          <!-- KPI 4: Clinical Risk Level -->
+          <div class="tile-dark rounded-xl p-4 border border-slate-800/80 space-y-1">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Clinical Risk</span>
+            <div class="flex items-baseline space-x-2">
+              <span id="modal-stat-risk" class="text-base font-bold text-emerald-400">Minimal</span>
+            </div>
+            <span id="modal-stat-risk-sub" class="text-[11px] text-slate-400 block">Consistent plasma levels</span>
+          </div>
+
+        </div>
+
+        <!-- Middle 2-Column Section: Detailed Visual Donut + Time-of-Day Compliance Breakdown -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
+          
+          <!-- Left Column: Circular Donut Diagram -->
+          <div class="md:col-span-5 tile-dark rounded-2xl p-5 border border-slate-800/80 flex flex-col items-center justify-between text-center">
+            <div class="w-full flex items-center justify-between text-xs font-bold text-slate-300 pb-2 border-b border-slate-800/60">
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-chart-pie text-cyan-400 text-xs"></i> Dose Distribution</span>
+              <span class="text-[10px] font-mono text-slate-400">Taken vs Missed</span>
+            </div>
+
+            <!-- Glowing Circular Ring in Modal -->
+            <div class="relative w-48 h-48 flex items-center justify-center my-3">
+              <svg id="modal-svg-donut" viewBox="0 0 400 400" class="w-full h-full donut-glow">
+                <g id="modal-donut-layers"></g>
+              </svg>
+              <div class="absolute pointer-events-none flex flex-col items-center justify-center text-center p-2 rounded-full bg-[#0c121b]/95 border border-slate-700/80 shadow-xl" style="width: 98px; height: 98px;">
+                <span id="modal-center-pct" class="text-2xl font-black text-white font-mono leading-none">100%</span>
+                <span id="modal-center-label" class="text-[9px] text-teal-400 font-bold mt-1">Optimal</span>
+              </div>
+            </div>
+
+            <!-- Legend pills -->
+            <div class="w-full grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-800/60">
+              <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800 flex items-center justify-between">
+                <div class="flex items-center space-x-1.5">
+                  <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                  <span class="text-[11px] text-slate-300 font-medium">Taken</span>
+                </div>
+                <span id="modal-legend-taken" class="font-mono font-bold text-cyan-300 text-xs">0</span>
+              </div>
+              <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800 flex items-center justify-between">
+                <div class="flex items-center space-x-1.5">
+                  <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                  <span class="text-[11px] text-slate-300 font-medium">Missed</span>
+                </div>
+                <span id="modal-legend-missed" class="font-mono font-bold text-rose-300 text-xs">0</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Time-of-Day Adherence Analytics -->
+          <div class="md:col-span-7 tile-dark rounded-2xl p-5 border border-slate-800/80 flex flex-col justify-between space-y-4">
+            
+            <div class="flex items-center justify-between text-xs font-bold text-slate-300 pb-2 border-b border-slate-800/60">
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-clock-rotate-left text-teal-400 text-xs"></i> Chronological Dose Analysis</span>
+              <span class="text-[10px] text-teal-300 font-mono bg-teal-950/60 px-2 py-0.5 rounded border border-teal-500/30">Morning • Afternoon • Night</span>
+            </div>
+
+            <!-- 3 Chronological Rows -->
+            <div class="space-y-3 flex-1 justify-center flex flex-col">
+              
+              <!-- Morning Card -->
+              <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800/80 space-y-1.5">
+                <div class="flex items-center justify-between text-xs">
+                  <div class="flex items-center space-x-2">
+                    <span class="w-6 h-6 rounded-lg bg-teal-500/20 text-teal-300 flex items-center justify-center text-[10px]">
+                      <i class="fa-regular fa-sun"></i>
+                    </span>
+                    <span class="font-bold text-slate-200">Morning Dose (GPIO 19)</span>
+                  </div>
+                  <div class="flex items-center space-x-2 font-mono text-xs">
+                    <span id="modal-morning-count" class="font-bold text-cyan-300">0 Taken</span>
+                    <span id="modal-morning-compliance" class="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">100%</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div id="modal-morning-bar" class="h-full bg-gradient-to-r from-teal-400 to-cyan-400 rounded-full transition-all duration-500" style="width: 100%;"></div>
+                </div>
+              </div>
+
+              <!-- Afternoon Card -->
+              <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800/80 space-y-1.5">
+                <div class="flex items-center justify-between text-xs">
+                  <div class="flex items-center space-x-2">
+                    <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center text-[10px]">
+                      <i class="fa-solid fa-sun"></i>
+                    </span>
+                    <span class="font-bold text-slate-200">Afternoon Dose (GPIO 18)</span>
+                  </div>
+                  <div class="flex items-center space-x-2 font-mono text-xs">
+                    <span id="modal-evening-count" class="font-bold text-amber-300">0 Taken</span>
+                    <span id="modal-evening-compliance" class="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">100%</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div id="modal-evening-bar" class="h-full bg-gradient-to-r from-amber-400 to-amber-300 rounded-full transition-all duration-500" style="width: 100%;"></div>
+                </div>
+              </div>
+
+              <!-- Night Card -->
+              <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800/80 space-y-1.5">
+                <div class="flex items-center justify-between text-xs">
+                  <div class="flex items-center space-x-2">
+                    <span class="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-300 flex items-center justify-center text-[10px]">
+                      <i class="fa-regular fa-moon"></i>
+                    </span>
+                    <span class="font-bold text-slate-200">Night Dose (GPIO 5)</span>
+                  </div>
+                  <div class="flex items-center space-x-2 font-mono text-xs">
+                    <span id="modal-night-count" class="font-bold text-rose-300">0 Taken</span>
+                    <span id="modal-night-compliance" class="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">100%</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div id="modal-night-bar" class="h-full bg-gradient-to-r from-rose-400 to-rose-300 rounded-full transition-all duration-500" style="width: 100%;"></div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Subtext note -->
+            <p id="modal-time-analysis-summary" class="text-[11px] text-slate-400 leading-relaxed italic bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/50">
+              Analyzing intake timestamps...
+            </p>
+
+          </div>
+
+        </div>
+
+        <!-- Section 3: CLINICAL HEALTH CONDITION ANALYSIS & ACTIONABLE RECOMMENDATIONS -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          
+          <!-- Card A: Medical Condition Analysis -->
+          <div class="tile-dark rounded-2xl p-5 border border-slate-800/80 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2 text-teal-400 font-bold text-xs">
+                <i class="fa-solid fa-stethoscope text-sm"></i>
+                <h4 class="text-white text-xs uppercase tracking-wide">Physiological Health Condition Analysis</h4>
+              </div>
+              <span id="health-condition-tag" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-950 text-teal-300 border border-teal-500/30">Stable Prognosis</span>
+            </div>
+
+            <div id="health-condition-text" class="text-xs text-slate-300 space-y-2 leading-relaxed bg-[#0a0f16] p-3.5 rounded-xl border border-slate-800/80">
+              <!-- Dynamically populated by app.js based on data -->
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-[11px] pt-1">
+              <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]">Therapeutic Window:</span>
+                <span id="therapeutic-window-status" class="font-bold text-emerald-400">95%+ Maintained</span>
+              </div>
+              <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]">Relapse Risk Index:</span>
+                <span id="relapse-risk-status" class="font-bold text-emerald-400">Very Low (Minimal)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card B: Clinical Action Plan & Tailored Recommendations -->
+          <div class="tile-dark rounded-2xl p-5 border border-slate-800/80 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2 text-cyan-400 font-bold text-xs">
+                <i class="fa-solid fa-lightbulb text-sm"></i>
+                <h4 class="text-white text-xs uppercase tracking-wide">Personalized Action Recommendations</h4>
+              </div>
+              <span class="text-[10px] font-mono text-slate-400">AI Care Engine</span>
+            </div>
+
+            <ul id="health-recommendations-list" class="space-y-2 text-xs text-slate-300">
+              <!-- Dynamically populated by app.js -->
+            </ul>
+
+            <div class="p-3 bg-teal-950/30 rounded-xl border border-teal-500/30 flex items-start space-x-2.5 mt-2">
+              <i class="fa-solid fa-circle-check text-teal-400 text-xs mt-0.5 shrink-0"></i>
+              <p class="text-[11px] text-teal-200/90 leading-relaxed">
+                <strong>Next Suggested Action:</strong> Maintain box linked to power. Doses taken within 10 seconds prevent missed medication alarms and keep therapeutic levels steady.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-slate-800 bg-[#0a0f16] flex items-center justify-between">
+        <div class="flex items-center space-x-2 text-[11px] text-slate-500 font-mono">
+          <i class="fa-solid fa-shield-halved text-teal-500"></i>
+          <span>MediBox IoT Clinical Analytics • Real-Time Telemetry</span>
+        </div>
+        <button id="btn-done-adherence-modal" onclick="closeAdherenceModal()" class="px-5 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md shadow-teal-500/20">
+          Close & Return to Dashboard
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- AUTHENTICATION & LOGIN SYSTEM MODAL -->
+  <!-- ================================================================= -->
+  <div id="auth-modal-backdrop" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 transition-opacity duration-300 opacity-0 hidden flex items-center justify-center p-4">
+    <div id="auth-modal" class="bg-[#0f1724] border border-slate-700/80 rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-300">
+      
+      <!-- Auth Header -->
+      <div class="p-6 border-b border-slate-800 text-center bg-[#0a0f16] space-y-2">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20 border border-teal-500/40 text-teal-400 mx-auto flex items-center justify-center text-xl shadow-lg shadow-teal-500/20">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <h3 class="text-lg font-extrabold text-white">MediBox IoT Portal</h3>
+        <p class="text-xs text-slate-400">Sign in to access your Patient & Medication Care Portal</p>
+      </div>
+
+      <!-- Auth Form -->
+      <form id="auth-login-form" class="p-6 space-y-4 text-xs" onsubmit="event.preventDefault(); handleLoginSubmit();">
+        
+        <!-- Error Alert -->
+        <div id="auth-error-banner" class="hidden p-3 rounded-xl bg-rose-950/80 border border-rose-500/40 text-rose-300 text-xs flex items-center space-x-2">
+          <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+          <span id="auth-error-msg">Invalid User ID or Password</span>
+        </div>
+
+        <!-- User ID -->
+        <div class="space-y-1.5">
+          <label class="font-bold text-slate-300 uppercase tracking-wider text-[10px]">User ID / Email</label>
+          <div class="flex items-center space-x-2 bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 focus-within:border-teal-500/60 transition">
+            <i class="fa-regular fa-user text-slate-500 text-xs"></i>
+            <input type="text" id="login-userid" placeholder="e.g. patient123" required class="w-full bg-transparent text-white font-medium focus:outline-none placeholder:text-slate-600">
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-slate-300 uppercase tracking-wider text-[10px]">Password</label>
+            <button type="button" onclick="togglePasswordVisibility()" class="text-[10px] text-teal-400 hover:text-teal-300 cursor-pointer">
+              <span id="pwd-toggle-text">Show</span>
+            </button>
+          </div>
+          <div class="flex items-center space-x-2 bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 focus-within:border-teal-500/60 transition">
+            <i class="fa-solid fa-key text-slate-500 text-xs"></i>
+            <input type="password" id="login-password" placeholder="••••••••" required class="w-full bg-transparent text-white font-medium focus:outline-none placeholder:text-slate-600">
+          </div>
+        </div>
+
+        <!-- Quick 1-Click Demo Logins -->
+        <div class="pt-1 space-y-1.5">
+          <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block">1-Click Quick Demo Sign In:</span>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="autofillLogin('patient123', 'medibox123')" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-teal-300 font-semibold border border-slate-700 transition flex items-center justify-center space-x-1.5 cursor-pointer text-[11px]">
+              <i class="fa-solid fa-user-check text-[10px]"></i>
+              <span>Patient (Alex)</span>
+            </button>
+            <button type="button" onclick="autofillLogin('dr_jenkins', 'medibox123')" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-cyan-300 font-semibold border border-slate-700 transition flex items-center justify-center space-x-1.5 cursor-pointer text-[11px]">
+              <i class="fa-solid fa-user-doctor text-[10px]"></i>
+              <span>Doctor Jenkins</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="w-full py-3 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-white rounded-xl font-bold text-xs shadow-lg shadow-teal-500/20 transition cursor-pointer flex items-center justify-center space-x-2 mt-4">
+          <i class="fa-solid fa-right-to-bracket text-xs"></i>
+          <span>Sign In to Dashboard</span>
+        </button>
+
+      </form>
+
+      <!-- Footer Note -->
+      <div class="p-4 border-t border-slate-800 bg-[#0a0f16] text-center text-[10px] text-slate-500">
+        Protected by MediBox 256-Bit Encrypted Healthcare Gateway
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- EDIT PROFILE MODAL -->
+  <!-- ================================================================= -->
+  <div id="edit-profile-modal-backdrop" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 transition-opacity duration-300 opacity-0 hidden flex items-center justify-center p-4">
+    <div id="edit-profile-modal" class="bg-[#0f1724] border border-slate-700/80 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-300">
+      
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-[#0a0f16]">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-teal-500/20 border border-teal-500/40 text-teal-400 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-user-pen"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-white">Edit Patient Profile</h3>
+            <p class="text-xs text-slate-400">Update medical identification and caregiver contact</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeEditProfileModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <form id="edit-profile-form" class="p-6 space-y-4 text-xs overflow-y-auto max-h-[75vh]" onsubmit="event.preventDefault(); handleSaveProfileSubmit();">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Full Name</label>
+            <input type="text" id="edit-name" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white font-medium focus:outline-none focus:border-teal-500">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Age</label>
+            <input type="number" id="edit-age" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white font-medium focus:outline-none focus:border-teal-500">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Blood Group</label>
+            <input type="text" id="edit-blood-group" placeholder="e.g. O+" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white font-medium focus:outline-none focus:border-teal-500">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Gender</label>
+            <select id="edit-gender" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white font-medium focus:outline-none focus:border-teal-500">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-slate-400 uppercase">Primary Attending Physician</label>
+          <input type="text" id="edit-physician" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white font-medium focus:outline-none focus:border-teal-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Emergency Contact Name</label>
+            <input type="text" id="edit-emergency-name" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white font-medium focus:outline-none focus:border-teal-500">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Emergency Phone</label>
+            <input type="text" id="edit-emergency-phone" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white font-medium focus:outline-none focus:border-teal-500">
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-slate-400 uppercase">Documented Allergies</label>
+          <input type="text" id="edit-allergies" placeholder="e.g. Penicillin, Shellfish" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white font-medium focus:outline-none focus:border-teal-500">
+        </div>
+
+        <div class="pt-2 flex items-center justify-end space-x-2">
+          <button type="button" onclick="closeEditProfileModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold text-xs border border-slate-700 transition cursor-pointer">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-white rounded-xl font-bold text-xs shadow-md shadow-teal-500/20 transition cursor-pointer">
+            Save Profile
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
+
